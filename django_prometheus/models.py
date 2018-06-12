@@ -15,6 +15,36 @@ model_deletes = Counter(
     'Number of delete operations by model.',
     ['model'])
 
+class Mixin(object):
+    model_name = ""
+    
+    def _do_insert(self, *args, **kwargs):
+        model_inserts.labels(model_name).inc()
+        return super(
+            Mixin,
+            self)._do_insert(
+            *
+            args,
+            **kwargs)
+
+    def _do_update(self, *args, **kwargs):
+        model_updates.labels(model_name).inc()
+        return super(
+            Mixin,
+            self)._do_update(
+            *
+            args,
+            **kwargs)
+
+    def delete(self, *args, **kwargs):
+        model_deletes.labels(model_name).inc()
+        return super(
+            Mixin,
+            self).delete(
+            *
+            args,
+            **kwargs)
+
 
 def ExportModelOperationsMixin(model_name):
     """Returns a mixin for models to export counters for lifecycle operations.
@@ -24,7 +54,8 @@ def ExportModelOperationsMixin(model_name):
           ...
     """
     # Force create the labels for this model in the counters. This
-    # is not necessary but it avoids gaps in the aggregated data.
+    # is not necessary but it avoids gaps in the
+    # aggregated data.
     model_inserts.labels(model_name)
     model_updates.labels(model_name)
     model_deletes.labels(model_name)
@@ -32,13 +63,28 @@ def ExportModelOperationsMixin(model_name):
     class Mixin(object):
         def _do_insert(self, *args, **kwargs):
             model_inserts.labels(model_name).inc()
-            return super(Mixin, self)._do_insert(*args, **kwargs)
+            return super(
+                Mixin,
+                self)._do_insert(
+                *
+                args,
+                **kwargs)
 
         def _do_update(self, *args, **kwargs):
             model_updates.labels(model_name).inc()
-            return super(Mixin, self)._do_update(*args, **kwargs)
+            return super(
+                Mixin,
+                self)._do_update(
+                *
+                args,
+                **kwargs)
 
         def delete(self, *args, **kwargs):
             model_deletes.labels(model_name).inc()
-            return super(Mixin, self).delete(*args, **kwargs)
+            return super(
+                Mixin,
+                self).delete(
+                *
+                args,
+                **kwargs)
     return Mixin
